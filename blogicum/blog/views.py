@@ -1,6 +1,11 @@
 from django.http import HttpRequest
 from django.shortcuts import HttpResponse, render
 
+
+class UndefinedPostIndexError(ValueError):
+    pass
+
+
 posts = [
     {
         "id": 0,
@@ -56,11 +61,20 @@ def index(request: HttpRequest) -> HttpResponse:
     return render(request, template_name, context)
 
 
-def detail(request: HttpRequest, id: int) -> HttpResponse:
+def post_detail(request: HttpRequest, id: int) -> HttpResponse:
     template_name = "blog/detail.html"
 
+    post = None
+    for elem in posts:
+        if id == elem["id"]:
+            post = elem
+            break
+
+    if post is None:
+        raise UndefinedPostIndexError(f"Error. Post with {id=} was not found.")
+
     context = {
-        "post": posts[id],
+        "post": post,
     }
 
     return render(request, template_name, context)
